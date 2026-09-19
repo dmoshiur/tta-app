@@ -1,0 +1,6 @@
+{
+  "name": "ThinkTank Academia",
+  "description": "A Learning & Knowledge Platform for Education, Ideas and Humanity.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

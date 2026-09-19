@@ -1,0 +1,74 @@
+<resources>
+    <string name="app_name">ThinkTank Academia</string>
+    <string name="tagline">জানুন • ভাবুন • বুঝুন • ঐক্যবদ্ধ হোন</string>
+    <string name="brand_description">শিক্ষা, ধারণা এবং মানবতার জন্য একটি শিক্ষা ও জ্ঞান প্ল্যাটফর্ম।</string>
+    
+    <!-- Auth Strings -->
+    <string name="welcome">স্বাগতম</string>
+    <string name="login">লগ ইন</string>
+    <string name="register">সাইন আপ</string>
+    <string name="email">ইমেইল ঠিকানা</string>
+    <string name="username">ইউজারনেম</string>
+    <string name="password">পাসওয়ার্ড</string>
+    <string name="forgot_password">পাসওয়ার্ড ভুলে গেছেন?</string>
+    <string name="reset_password">পাসওয়ার্ড রিসেট করুন</string>
+    <string name="request_reset">রিসেট অনুরোধ পাঠান</string>
+    <string name="logout">লগ আউট</string>
+    <string name="dont_have_account">অ্যাকাউন্ট নেই? সাইন আপ করুন</string>
+    <string name="already_have_account">ইতিমধ্যে অ্যাকাউন্ট আছে? লগ ইন করুন</string>
+    <string name="email_required">ইমেইল প্রয়োজন</string>
+    <string name="password_required">পাসওয়ার্ড প্রয়োজন</string>
+    <string name="password_too_short">পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে</string>
+    <string name="name_required">নাম প্রয়োজন</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">হোম</string>
+    <string name="nav_courses">কোর্সসমূহ</string>
+    <string name="nav_explore">এক্সপ্লোর</string>
+    <string name="nav_my_learning">আমার শিক্ষা</string>
+    <string name="nav_profile">প্রোফাইল</string>
+    <string name="nav_bookmarks">বুকমার্কসমূহ</string>
+    <string name="nav_notifications">নোটিফিকেশনসমূহ</string>
+    
+    <!-- Features -->
+    <string name="search_hint">কোর্স, আর্টিকেল বা বই খুঁজুন…</string>
+    <string name="featured_courses">ফিচার্ড কোর্সসমূহ</string>
+    <string name="continue_learning">পড়া চালিয়ে যান</string>
+    <string name="my_bookmarks">আমার বুকমার্কসমূহ</string>
+    <string name="enroll_now">কোর্সে যুক্ত হোন</string>
+    <string name="enrolled">যুক্ত আছেন</string>
+    <string name="mark_completed">সম্পন্ন চিহ্নিত করুন</string>
+    <string name="completed">সম্পন্ন</string>
+    <string name="next_lesson">পরবর্তী লেসন</string>
+    <string name="prev_lesson">পূর্ববর্তী লেসন</string>
+    <string name="start_quiz">কুইজ শুরু করুন</string>
+    <string name="submit_quiz">কুইজ জমা দিন</string>
+    <string name="quiz_results">কুইজের ফলাফল</string>
+    <string name="your_score">আপনার স্কোর: %1$d%%</string>
+    
+    <!-- Content types -->
+    <string name="tab_articles">আর্টিকেল</string>
+    <string name="tab_books">বইপত্র</string>
+    <string name="tab_knowledge">জ্ঞান</string>
+    <string name="tab_world">বিশ্ব রাজনীতি</string>
+    <string name="tab_humanity">মানবতা</string>
+    <string name="tab_society">সমাজ</string>
+    
+    <!-- General UI states -->
+    <string name="loading">লোড হচ্ছে…</string>
+    <string name="empty_courses">কোনো কোর্স পাওয়া যায়নি।</string>
+    <string name="empty_bookmarks">এখনো কোনো বুকমার্ক নেই।</string>
+    <string name="empty_notifications">কোনো নতুন নোটিফিকেশন নেই।</string>
+    <string name="error_title">কিছু ভুল হয়েছে</string>
+    <string name="error_message">দয়া করে আপনার নেটওয়ার্ক সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।</string>
+    <string name="retry">পুনরায় চেষ্টা করুন</string>
+    
+    <!-- Settings -->
+    <string name="settings">সেটিংস</string>
+    <string name="change_password">পাসওয়ার্ড পরিবর্তন করুন</string>
+    <string name="current_password">বর্তমান পাসওয়ার্ড</string>
+    <string name="new_password">নতুন পাসওয়ার্ড</string>
+    <string name="save_changes">পরিবর্তন সংরক্ষণ করুন</string>
+    <string name="edit_profile">প্রোফাইল সম্পাদনা</string>
+    <string name="full_name">পূর্ণ নাম</string>
+</resources>
