@@ -24,6 +24,10 @@
     <!-- Navigation -->
     <string name="nav_home">হোম</string>
     <string name="nav_courses">কোর্সসমূহ</string>
+    <string name="nav_quizzes">কুইজসমূহ</string>
+    <string name="nav_search">অনুসন্ধান</string>
+    <string name="nav_dashboard">ড্যাশবোর্ড</string>
+    <string name="nav_signin">সাইন ইন</string>
     <string name="nav_explore">এক্সপ্লোর</string>
     <string name="nav_my_learning">আমার শিক্ষা</string>
     <string name="nav_profile">প্রোফাইল</string>

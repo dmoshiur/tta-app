@@ -73,6 +73,12 @@ interface ApiService {
     ): Envelope<Unit>
 
     // Quizzes
+    @GET("quizzes")
+    suspend fun getQuizzes(
+        @Query("search") search: String? = null,
+        @Query("category") category: String? = null
+    ): Envelope<List<QuizDto>>
+
     @GET("quizzes/{id}")
     suspend fun getQuiz(
         @Path("id") id: String

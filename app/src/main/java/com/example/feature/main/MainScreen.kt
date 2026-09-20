@@ -1,7 +1,12 @@
 package com.example.feature.main
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -44,7 +49,8 @@ fun MainScreen(
     val context = LocalContext.current
     
     // ViewModels generated cleanly using factory
-    val factory = remember { ViewModelFactory.createFactory(context) }
+    val factory = remember { ViewModelFactory.createFactory(context) as ViewModelFactory }
+    val repository = factory.repository
     
     val homeViewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = factory)
     val coursesViewModel: CoursesViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = factory)
@@ -58,10 +64,10 @@ fun MainScreen(
 
     val bottomNavItems = listOf(
         NavigationItem(Screen.Home.route, stringResource(id = R.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
-        NavigationItem(Screen.Courses.route, stringResource(id = R.string.nav_courses), Icons.Filled.Book, Icons.Outlined.Book),
-        NavigationItem(Screen.Explore.route, stringResource(id = R.string.nav_explore), Icons.Filled.Explore, Icons.Outlined.Explore),
-        NavigationItem(Screen.MyLearning.route, stringResource(id = R.string.nav_my_learning), Icons.Filled.School, Icons.Outlined.School),
-        NavigationItem(Screen.Profile.route, stringResource(id = R.string.nav_profile), Icons.Filled.Person, Icons.Outlined.Person)
+        NavigationItem(Screen.Courses.route, stringResource(id = R.string.nav_courses), Icons.Filled.MenuBook, Icons.Outlined.MenuBook),
+        NavigationItem(Screen.Quizzes.route, stringResource(id = R.string.nav_quizzes), Icons.Filled.Quiz, Icons.Outlined.Quiz),
+        NavigationItem(Screen.Search.route, stringResource(id = R.string.nav_search), Icons.Filled.Search, Icons.Outlined.Search),
+        NavigationItem(Screen.Profile.route, stringResource(id = R.string.nav_dashboard), Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
     )
 
     val showBottomBar = bottomNavItems.any { it.route == currentRoute }
@@ -105,7 +111,8 @@ fun MainScreen(
             if (showBottomBar) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 8.dp
+                    tonalElevation = 8.dp,
+                    modifier = Modifier.height(56.dp)
                 ) {
                     bottomNavItems.forEach { item ->
                         val isSelected = currentRoute == item.route
@@ -123,15 +130,36 @@ fun MainScreen(
                                 }
                             },
                             icon = {
-                                Icon(
-                                    imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = item.title
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    if (isSelected) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(4.dp)
+                                                .background(MaterialTheme.colorScheme.secondary, shape = CircleShape)
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                    } else {
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                    }
+                                    Icon(
+                                        imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                                        contentDescription = item.title,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            },
+                            label = {
+                                Text(
+                                    text = item.title,
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
                             },
-                            label = { Text(item.title) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.tertiary
+                                unselectedIconColor = MaterialTheme.colorScheme.tertiary,
+                                indicatorColor = androidx.compose.ui.graphics.Color.Transparent
                             )
                         )
                     }
@@ -161,6 +189,34 @@ fun MainScreen(
                     viewModel = coursesViewModel,
                     onCourseClick = { courseId ->
                         navController.navigate(Screen.CourseDetails.createRoute(courseId))
+                    }
+                )
+            }
+
+            // Quizzes List
+            composable(Screen.Quizzes.route) {
+                com.example.feature.quiz.QuizzesListScreen(
+                    viewModel = quizViewModel,
+                    onQuizClick = { quizId ->
+                        navController.navigate(Screen.Quiz.createRoute(quizId))
+                    }
+                )
+            }
+
+            // Search
+            composable(Screen.Search.route) {
+                com.example.feature.search.SearchScreen(
+                    repository = repository,
+                    onCourseClick = { courseId ->
+                        navController.navigate(Screen.CourseDetails.createRoute(courseId))
+                    },
+                    onExploreClick = { itemId, type ->
+                        if (type == "COURSE") {
+                            navController.navigate(Screen.CourseDetails.createRoute(itemId))
+                        } else {
+                            exploreViewModel.selectType(type)
+                            navController.navigate("explore_detail/$itemId")
+                        }
                     }
                 )
             }

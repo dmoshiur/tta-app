@@ -299,3 +299,122 @@ fun QuizScreen(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun QuizzesListScreen(
+    viewModel: QuizViewModel,
+    onQuizClick: (String) -> Unit
+) {
+    val quizzes by viewModel.quizzes.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val searchQuery by viewModel.quizzesSearchQuery.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = stringResource(id = R.string.nav_quizzes),
+            style = MaterialTheme.typography.displayMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Quiz Search Box
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { viewModel.searchQuizzes(it) },
+            placeholder = { Text("Search academic assessments…") },
+            leadingIcon = { Icon(Icons.Default.Timer, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("quiz_search_bar"),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+            )
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        if (loading) {
+            Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        } else {
+            if (quizzes.isEmpty()) {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "No assessments found.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                androidx.compose.foundation.lazy.LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(quizzes.size) { index ->
+                        val quizItem = quizzes[index]
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onQuizClick(quizItem.id) }
+                                .testTag("quiz_item_${quizItem.id}"),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = quizItem.title,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Timer,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "${quizItem.durationMinutes} minutes duration",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Button(
+                                    onClick = { onQuizClick(quizItem.id) },
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                    modifier = Modifier.fillMaxWidth().height(44.dp)
+                                ) {
+                                    Text("Start Assessment", fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

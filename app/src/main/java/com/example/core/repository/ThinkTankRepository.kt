@@ -276,6 +276,31 @@ class ThinkTankRepository(
     }
 
     // --- Quizzes ---
+    suspend fun getQuizzes(search: String? = null, category: String? = null): Envelope<List<QuizDto>> {
+        val cacheKey = "quizzes_list_${search ?: ""}_${category ?: ""}"
+        return try {
+            val response = apiService.getQuizzes(search, category)
+            if (response.success && response.data != null) {
+                val listType = Types.newParameterizedType(List::class.java, QuizDto::class.java)
+                val json = moshi.adapter<List<QuizDto>>(listType).toJson(response.data)
+                appDao.insertCache(OfflineCacheEntity(cacheKey, json))
+            }
+            response
+        } catch (e: Exception) {
+            val cached = appDao.getCacheByKey(cacheKey)
+            if (cached != null) {
+                val listType = Types.newParameterizedType(List::class.java, QuizDto::class.java)
+                val data = moshi.adapter<List<QuizDto>>(listType).fromJson(cached.jsonContent)
+                Envelope(success = true, data = data)
+            } else {
+                val list = getMockQuizzes().filter {
+                    (search == null || it.title.contains(search, ignoreCase = true))
+                }
+                Envelope(success = true, data = list)
+            }
+        }
+    }
+
     suspend fun getQuiz(id: String): Envelope<QuizDto> {
         val cacheKey = "quiz_detail_$id"
         return try {

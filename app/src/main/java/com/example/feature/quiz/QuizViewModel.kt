@@ -15,6 +15,12 @@ class QuizViewModel(private val repository: ThinkTankRepository) : ViewModel() {
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
 
+    private val _quizzes = MutableStateFlow<List<QuizDto>>(emptyList())
+    val quizzes: StateFlow<List<QuizDto>> = _quizzes.asStateFlow()
+
+    private val _quizzesSearchQuery = MutableStateFlow("")
+    val quizzesSearchQuery: StateFlow<String> = _quizzesSearchQuery.asStateFlow()
+
     private val _quiz = MutableStateFlow<QuizDto?>(null)
     val quiz: StateFlow<QuizDto?> = _quiz.asStateFlow()
 
@@ -28,6 +34,27 @@ class QuizViewModel(private val repository: ThinkTankRepository) : ViewModel() {
     val quizResult: StateFlow<QuizResponseDto?> = _quizResult.asStateFlow()
 
     private var timerJob: Job? = null
+
+    init {
+        loadQuizzes()
+    }
+
+    fun loadQuizzes() {
+        viewModelScope.launch {
+            _loading.value = true
+            val query = _quizzesSearchQuery.value.takeIf { it.isNotBlank() }
+            val result = repository.getQuizzes(search = query)
+            _loading.value = false
+            if (result.success && result.data != null) {
+                _quizzes.value = result.data
+            }
+        }
+    }
+
+    fun searchQuizzes(query: String) {
+        _quizzesSearchQuery.value = query
+        loadQuizzes()
+    }
 
     fun loadQuiz(quizId: String) {
         viewModelScope.launch {

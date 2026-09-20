@@ -15,7 +15,7 @@ import com.example.feature.lesson.LessonViewModel
 import com.example.feature.profile.ProfileViewModel
 import com.example.feature.quiz.QuizViewModel
 
-class ViewModelFactory(private val repository: ThinkTankRepository) : ViewModelProvider.Factory {
+class ViewModelFactory(val repository: ThinkTankRepository) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
