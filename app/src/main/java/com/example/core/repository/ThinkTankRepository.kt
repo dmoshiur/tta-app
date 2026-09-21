@@ -16,7 +16,7 @@ import java.io.IOException
 class ThinkTankRepository(
     private val apiService: ApiService,
     private val appDao: AppDao,
-    private val sessionManager: SessionManager,
+    val sessionManager: SessionManager,
     private val moshi: Moshi
 ) {
 

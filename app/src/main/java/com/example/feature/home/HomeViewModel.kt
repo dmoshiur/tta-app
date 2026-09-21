@@ -16,6 +16,14 @@ class HomeViewModel(private val repository: ThinkTankRepository) : ViewModel() {
     private val _dashboard = MutableStateFlow<DashboardDto?>(null)
     val dashboard: StateFlow<DashboardDto?> = _dashboard.asStateFlow()
 
+    val userName: StateFlow<String> = repository.sessionManager.userName
+        .map { it ?: "Academic Thinker" }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Academic Thinker")
+
+    val userAvatar: StateFlow<String> = repository.sessionManager.userAvatar
+        .map { it ?: "" }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
     val unreadNotificationsCount: StateFlow<Int> = repository.unreadNotificationsCount
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 

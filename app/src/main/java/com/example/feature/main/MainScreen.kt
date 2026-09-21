@@ -1,8 +1,12 @@
 package com.example.feature.main
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -13,7 +17,10 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -40,6 +47,13 @@ import com.example.feature.profile.*
 import com.example.feature.quiz.QuizScreen
 import com.example.feature.quiz.QuizViewModel
 
+data class BottomBarTab(
+    val route: String,
+    val title: String,
+    val selectedIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    val unselectedIcon: androidx.compose.ui.graphics.vector.ImageVector
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -48,7 +62,6 @@ fun MainScreen(
     val navController = rememberNavController()
     val context = LocalContext.current
     
-    // ViewModels generated cleanly using factory
     val factory = remember { ViewModelFactory.createFactory(context) as ViewModelFactory }
     val repository = factory.repository
     
@@ -62,106 +75,152 @@ fun MainScreen(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // Modern 5-Item Structure
     val bottomNavItems = listOf(
-        NavigationItem(Screen.Home.route, stringResource(id = R.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
-        NavigationItem(Screen.Courses.route, stringResource(id = R.string.nav_courses), Icons.Filled.MenuBook, Icons.Outlined.MenuBook),
-        NavigationItem(Screen.Quizzes.route, stringResource(id = R.string.nav_quizzes), Icons.Filled.Quiz, Icons.Outlined.Quiz),
-        NavigationItem(Screen.Search.route, stringResource(id = R.string.nav_search), Icons.Filled.Search, Icons.Outlined.Search),
-        NavigationItem(Screen.Profile.route, stringResource(id = R.string.nav_dashboard), Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
+        BottomBarTab(Screen.Home.route, stringResource(id = R.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
+        BottomBarTab(Screen.Courses.route, stringResource(id = R.string.nav_courses), Icons.Filled.MenuBook, Icons.Outlined.MenuBook),
+        BottomBarTab(Screen.Search.route, stringResource(id = R.string.nav_search), Icons.Filled.Search, Icons.Outlined.Search),
+        BottomBarTab(Screen.MyLearning.route, "Learning", Icons.Filled.School, Icons.Outlined.School),
+        BottomBarTab("more", "More", Icons.Filled.MoreHoriz, Icons.Outlined.MoreHoriz)
     )
 
-    val showBottomBar = bottomNavItems.any { it.route == currentRoute }
+    val showBottomBar = bottomNavItems.any { it.route == currentRoute } || currentRoute == "more"
+    var showMoreSheet by remember { mutableStateOf(false) }
+
+    val userName by homeViewModel.userName.collectAsState()
+    val userAvatar by homeViewModel.userAvatar.collectAsState()
+    val unreadCount by homeViewModel.unreadNotificationsCount.collectAsState()
 
     Scaffold(
         topBar = {
             if (showBottomBar) {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            text = stringResource(id = R.string.app_name),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                // Compact Premium Header (Logo | Bell Badge + Avatar)
+                Column(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .statusBarsPadding()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Official Logo scaled beautifully
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo),
+                            contentDescription = "ThinkTank Academia Logo",
+                            modifier = Modifier
+                                .height(32.dp)
+                                .clip(RoundedCornerShape(4.dp))
                         )
-                    },
-                    actions = {
-                        IconButton(onClick = { navController.navigate(Screen.Notifications.route) }) {
-                            val count by homeViewModel.unreadNotificationsCount.collectAsState()
-                            BadgedBox(
-                                badge = {
-                                    if (count > 0) {
-                                        Badge { Text(count.toString()) }
-                                    }
-                                }
+
+                        // Rightside Icons
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            IconButton(
+                                onClick = { navController.navigate(Screen.Notifications.route) },
+                                modifier = Modifier.size(36.dp)
                             ) {
-                                Icon(Icons.Outlined.Notifications, contentDescription = stringResource(id = R.string.nav_notifications))
+                                BadgedBox(
+                                    badge = {
+                                        if (unreadCount > 0) {
+                                            Badge(
+                                                containerColor = MaterialTheme.colorScheme.secondary,
+                                                contentColor = Color.White
+                                            ) {
+                                                Text(unreadCount.toString(), fontSize = 10.sp)
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Notifications,
+                                        contentDescription = "Notifications",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
+                            // Profile Avatar Initials
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
+                                    .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
+                                    .clickable { navController.navigate(Screen.Profile.route) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = userName.take(1).uppercase(),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
-                        IconButton(onClick = { navController.navigate(Screen.Bookmarks.route) }) {
-                            Icon(Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.nav_bookmarks))
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background
-                    )
-                )
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                }
             }
         },
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 8.dp,
-                    modifier = Modifier.height(56.dp)
-                ) {
-                    bottomNavItems.forEach { item ->
-                        val isSelected = currentRoute == item.route
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = {
-                                if (currentRoute != item.route) {
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            },
-                            icon = {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    if (isSelected) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(4.dp)
-                                                .background(MaterialTheme.colorScheme.secondary, shape = CircleShape)
-                                        )
-                                        Spacer(modifier = Modifier.height(2.dp))
+                Column {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 0.dp,
+                        modifier = Modifier.navigationBarsPadding().height(64.dp)
+                    ) {
+                        bottomNavItems.forEach { item ->
+                            val isSelected = if (item.route == "more") showMoreSheet else (currentRoute == item.route)
+                            NavigationBarItem(
+                                selected = isSelected,
+                                onClick = {
+                                    if (item.route == "more") {
+                                        showMoreSheet = true
                                     } else {
-                                        Spacer(modifier = Modifier.height(6.dp))
+                                        showMoreSheet = false
+                                        if (currentRoute != item.route) {
+                                            navController.navigate(item.route) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        }
                                     }
+                                },
+                                icon = {
                                     Icon(
                                         imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
                                         contentDescription = item.title,
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(22.dp)
                                     )
-                                }
-                            },
-                            label = {
-                                Text(
-                                    text = item.title,
-                                    fontSize = 10.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                },
+                                label = {
+                                    Text(
+                                        text = item.title,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    indicatorColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
                                 )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                unselectedIconColor = MaterialTheme.colorScheme.tertiary,
-                                indicatorColor = androidx.compose.ui.graphics.Color.Transparent
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -363,11 +422,219 @@ fun MainScreen(
             }
         }
     }
+
+    // Beautiful Premium "More" Menu Modal Bottom Sheet
+    if (showMoreSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showMoreSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 36.dp, top = 8.dp)
+            ) {
+                // Header Details
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 20.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = userName.take(1).uppercase(),
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = userName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "ThinkTank Scholar",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Section 1: Academy Features
+                Text(
+                    text = "ACADEMIC PORTAL",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                MoreMenuItem(
+                    icon = Icons.Outlined.Assignment,
+                    title = "Academic Quizzes",
+                    subtitle = "Verify and track your course retention",
+                    onClick = {
+                        showMoreSheet = false
+                        navController.navigate(Screen.Quizzes.route)
+                    }
+                )
+
+                MoreMenuItem(
+                    icon = Icons.Outlined.Bookmarks,
+                    title = "Saved Bookmarks",
+                    subtitle = "Review flagged reference documents & resources",
+                    onClick = {
+                        showMoreSheet = false
+                        navController.navigate(Screen.Bookmarks.route)
+                    }
+                )
+
+                MoreMenuItem(
+                    icon = Icons.Outlined.Notifications,
+                    title = "Platform Notifications",
+                    subtitle = "Stay updated on recent announcements",
+                    onClick = {
+                        showMoreSheet = false
+                        navController.navigate(Screen.Notifications.route)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Section 2: Account & System
+                Text(
+                    text = "ACCOUNT SERVICES",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                MoreMenuItem(
+                    icon = Icons.Outlined.AccountCircle,
+                    title = "Academic Profile & Dashboard",
+                    subtitle = "View enrolled courses and global stats",
+                    onClick = {
+                        showMoreSheet = false
+                        navController.navigate(Screen.Profile.route)
+                    }
+                )
+
+                MoreMenuItem(
+                    icon = Icons.Outlined.Settings,
+                    title = "App Preferences & Settings",
+                    subtitle = "Customize application language & options",
+                    onClick = {
+                        showMoreSheet = false
+                        navController.navigate(Screen.Settings.route)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Logout Button Action
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.error.copy(alpha = 0.08f))
+                        .clickable {
+                            showMoreSheet = false
+                            profileViewModel.logout {
+                                onLogout()
+                            }
+                        }
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ExitToApp,
+                        contentDescription = "Logout",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Sign Out Account",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
 }
 
-data class NavigationItem(
-    val route: String,
-    val title: String,
-    val selectedIcon: androidx.compose.ui.graphics.vector.ImageVector,
-    val unselectedIcon: androidx.compose.ui.graphics.vector.ImageVector
-)
+@Composable
+fun MoreMenuItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { onClick() }
+            .padding(vertical = 10.dp, horizontal = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}

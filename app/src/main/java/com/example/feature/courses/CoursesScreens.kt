@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.core.network.CourseDto
 import com.example.feature.home.CourseCard
+import com.example.feature.home.CourseSkeleton
 import com.example.feature.lesson.LessonViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,8 +100,13 @@ fun CoursesScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (loading) {
-            Box(modifier = Modifier.fillWeight(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                items(3) {
+                    CourseSkeleton()
+                }
             }
         } else {
             if (courses.isEmpty()) {
